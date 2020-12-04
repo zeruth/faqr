@@ -570,39 +570,26 @@ public class FaqsActivity extends BaseActivity {
             try {
                 FileInputStream is = new FileInputStream(file);
                 guide = getStringFromFile(is);
+                if (guide != null)
+                {
+                    FaqMeta fq = new FaqMeta(guide.split("\n")[1].split("by")[0] + // Guide Name
+                            " --- " +
+                            guide.split("\n")[3].split("|")[1].split("Updated: ")[0] + // Updated
+                            " --- " +
+                            guide.split("\n")[1].split("by")[1] + // Author
+                            " --- " +
+                            guide.split("\n")[3].split("|")[0].split("Version: ")[0] + // Version
+                            " --- " +
+                            file.length()/1024 + " kb" +
+                            " --- " +
+                            "href" + // href
+                            " --- " +
+                            "img");
+                    Log.e("testing", fq.getDate());
+                    return fq;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
-            }
-            if (guide != null)
-            {
-                String[] metaBlock = new String[10];
-                int i = 0;
-                while (i != 10)
-                {
-                    metaBlock[i] = guide.split("\n")[i];
-                    i++;
-                }
-                String meta = "";
-                for (String s : metaBlock)
-                {
-                    meta = meta + s;
-                }
-
-                FaqMeta fq = new FaqMeta(meta.split("\n")[0].split("by")[0] + // Guide Name
-                        " --- " +
-                        meta.split("|")[1].split("Updated: ")[0] + // Updated
-                        " --- " +
-                        meta.split("\n")[0].split("by")[1] + // Author
-                        " --- " +
-                        meta.split("|")[0].split("Version: ")[0] + // Version
-                        " --- " +
-                        "size" +
-                        " --- " +
-                        "gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741" +
-                        " --- " +
-                        "img");
-                Log.e("testing", fq.getDate());
-                return fq;
             }
             return null;
         }
@@ -627,7 +614,6 @@ public class FaqsActivity extends BaseActivity {
             File file = (File) allData.get(position);
 
             FaqMeta faqMeta = getFaqMeta(file);
-
 
             // name
             TextView nameView = (TextView) view.findViewById(R.id.name);
