@@ -1458,7 +1458,7 @@ public class FaqActivity extends BaseActivity {
                             }
 
                             // download the faq from the web
-                            Document doc = Jsoup.connect(currFaqURL)
+                            Document doc = Jsoup.connect("http://faqchecker.ddns.net/faqs/direct?url=" + currFaqURL)
                                 .header("Accept-Encoding", "gzip, deflate")
                                 .userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0")
                                 .maxBodySize(0)

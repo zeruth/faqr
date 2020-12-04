@@ -88,6 +88,7 @@ public class SearchActivity extends BaseActivity {
     private Bundle extras;
 
     private String game = "";
+    private boolean autoFire = false;
     private String url = "";
 
     private SearchView searchView;
@@ -115,6 +116,9 @@ public class SearchActivity extends BaseActivity {
         extras = getIntent().getExtras();
         if (extras != null && extras.getString("game") != null && !TextUtils.isEmpty(extras.getString("game"))) {
             game = extras.getString("game");
+        }
+        if (extras != null && extras.getBoolean("autoFire")) {
+            autoFire = extras.getBoolean("autoFire");
         }
 
         setTitle("");
@@ -684,6 +688,7 @@ public class SearchActivity extends BaseActivity {
                 }
 
                 content = getFaq(game);
+                content = game + "\n" + content;
                 File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
                 File file = new File(dir + "/faqr/", validFileName(game));
                 file.createNewFile();
@@ -696,22 +701,32 @@ public class SearchActivity extends BaseActivity {
                 String sectionTitle = game.replace("gamefaqs.gamespot.com/", "").split("/")[1];
                 ArrayList sectionData = new ArrayList();
                 sectionData.add(
-                        content.split("\n")[0].split("by")[0] + // Guide Name
+                        content.split("\n")[1].split("by")[0] + // Guide Name
                                 " --- " +
-                                content.split("|")[1].split("Updated: ")[0] + // Updated
+                                content.split("\n")[3].split("|")[1].split("Updated: ")[0] + // Updated
                                 " --- " +
-                                content.split("\n")[0].split("by")[1] + // Author
+                                content.split("\n")[1].split("by")[1] + // Author
                                 " --- " +
-                                content.split("|")[0].split("Version: ") + // Version
+                                content.split("\n")[3].split("|")[0].split("Version: ")[0] + // Version
                                 " --- " +
                                 "size" +
                                 " --- " +
-                                "href" +
+                                "href" + // href
                                 " --- " +
                                 "img");
                 titles.add(sectionTitle);
                 data.add(sectionData);
                 allData.addAll(sectionData);
+
+
+                if (autoFire)
+                {
+                    if (!url.contains(getResources().getString(R.string.GAMEFAQS_URL))) {
+                        Intent intent = new Intent(getApplicationContext(), FaqActivity.class);
+                        intent.putExtra("from_search", true);
+                        startActivity(intent);
+                    }
+                }
 
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage(), e);

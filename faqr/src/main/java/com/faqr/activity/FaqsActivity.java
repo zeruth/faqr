@@ -90,6 +90,24 @@ public class FaqsActivity extends BaseActivity {
     protected AlertDialog clearConfirmDialog;
     protected AlertDialog deleteAllConfirmDialog;
 
+    public String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    public String getStringFromFile (FileInputStream fin) throws Exception {
+        String ret = convertStreamToString(fin);
+        //Make sure you close all streams.
+        fin.close();
+        return ret;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,24 +177,15 @@ public class FaqsActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 
                 final File file = (File) allData.get(position);
-                final String faqsMeta = prefs.getString(file.getName(), "");
-                final String faqsMetaLastRead = prefs.getString(file.getName() + "___last_read", "");
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ");
-
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("curr_faq", file.getName());
-                editor.putString(file.getName() + "___last_read", sdf.format(new Date()));
-                editor.commit();
-                Intent intent = new Intent(getApplicationContext(), FaqActivity.class);
-
-                editor = prefs.edit();
-                editor.putInt("my_faqs_pos", listView.getFirstVisiblePosition());
-                editor.commit();
-
-                // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-
+                try {
+                    String s = getStringFromFile(new FileInputStream(file)).split("\n")[0];
+                    Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+                    intent.putExtra("game", s);
+                    intent.putExtra("autoFire",true);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -589,7 +598,7 @@ public class FaqsActivity extends BaseActivity {
                         " --- " +
                         "size" +
                         " --- " +
-                        "faqchecker.ddns.net/faq/direct?url=gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741" +
+                        "gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741" +
                         " --- " +
                         "img");
                 Log.e("testing", fq.getDate());
@@ -739,9 +748,9 @@ public class FaqsActivity extends BaseActivity {
                     File source = getFilesDir();
                     File dest = FaqrApp.getFaqrFilesDir();
                     try {
-                        FileUtils.copyDirectory(source, dest);
-                        FileUtils.deleteDirectory(source);
-                    } catch (IOException e) {
+                        //FileUtils.copyDirectory(source, dest);
+                        //FileUtils.deleteDirectory(source);
+                    } catch (Exception e) {
                         Log.e(TAG, e.getMessage(), e);
                     }
                 }

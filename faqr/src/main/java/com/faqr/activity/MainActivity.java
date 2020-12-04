@@ -37,28 +37,11 @@ public class MainActivity extends BaseActivity {
         editor.putString("variable_font_size", "Auto");
         editor.commit();
 
-        // get the current FAQ
-        if (!TextUtils.isEmpty(prefs.getString("curr_faq", ""))) {
-
-            // auto open
-            if (prefs.getBoolean("auto_open_new", getResources().getBoolean(R.bool.auto_open_default))) {
-                Intent intent = new Intent(this, FaqActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
-                Intent intent = new Intent(this, FaqsActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-            }
-        } else {
-
-            // what to do if there are no faqs
-            Intent intent = new Intent(this, FaqsActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-        }
+        // what to do if there are no faqs
+        Intent intent = new Intent(this, FaqsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
     }
 
     @Override
