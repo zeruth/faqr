@@ -666,7 +666,7 @@ public class FaqmarksActivity extends BaseActivity implements OnClickListener {
 
                     String filecontent = FaqrApp.readSavedData(openFileInput(FaqrApp.validFileName(currFaq)));
                     if (!TextUtils.isEmpty(filecontent)) {
-                        lines = FaqrApp.getLinesFile(filecontent);
+                        lines = FaqrApp.getLinesFile(SearchActivity.content);
                         origLines = new String[lines.length];
                         System.arraycopy(lines, 0, origLines, 0, lines.length);
 

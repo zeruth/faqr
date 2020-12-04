@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.SearchView;
@@ -43,12 +44,23 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import se.emilsjolander.stickylistheaders.StickyListHeadersAdapter;
 import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 
@@ -58,6 +70,9 @@ import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
  * @author eneve
  */
 public class SearchActivity extends BaseActivity {
+
+    public static String content = "";
+    public static String directURL = "gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741";
 
     private StickyListHeadersListView listView;
     private SearchResultsListAdapter adapter;
@@ -76,6 +91,8 @@ public class SearchActivity extends BaseActivity {
     private String url = "";
 
     private SearchView searchView;
+
+    public final OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -526,15 +543,15 @@ public class SearchActivity extends BaseActivity {
                 }
 
                 nameView.setText(marker + item.split(" --- ")[0]);
-                authorView.setText(item.split(" --- ")[2]);
-                versionView.setText(item.split(" --- ")[3]);
-                sizeView.setText(item.split(" --- ")[4]);
+                //authorView.setText(item.split(" --- ")[2]);
+                //versionView.setText(item.split(" --- ")[3]);
+                //sizeView.setText(item.split(" --- ")[4]);
 
                 // theme goodness
                 nameView.setTextColor(themeAccentColor);
-                authorView.setTextColor(themeTextColor);
-                versionView.setTextColor(themeTextColor);
-                sizeView.setTextColor(themeTextColor);
+                //authorView.setTextColor(themeTextColor);
+                //versionView.setTextColor(themeTextColor);
+                //sizeView.setTextColor(themeTextColor);
             }
 
             return view;
@@ -597,9 +614,56 @@ public class SearchActivity extends BaseActivity {
             noResults.setVisibility(View.GONE);
         }
 
+        HttpUrl getFaqBase()
+        {
+            return HttpUrl.parse("http://faqchecker.ddns.net");
+        }
+
+        public String getFaq(String urlPath) throws IOException
+        {
+            HttpUrl url = getFaqBase().newBuilder()
+                    .addPathSegment("faqs")
+                    .addPathSegment("direct")
+                    .addQueryParameter("url", urlPath)
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return response.body().string();
+        }
+
+        private final char[] ILLEGAL_CHARACTERS = { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':', '.' };
+
+        public String validFileName(String title) {
+            String s = title;
+            int len = s.length();
+            StringBuilder sb = new StringBuilder(len);
+            for (int i = 0; i < len; i++) {
+                char ch = s.charAt(i);
+
+                boolean found = false;
+                for (char currch : ILLEGAL_CHARACTERS) {
+                    if (ch == currch) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    sb.append(ch);
+                } else {
+                    sb.append('_');
+                }
+
+            }
+            return sb.toString().replaceAll(" ", "_");
+        }
+
         @Override
         protected String doInBackground(String... strings) {
-
             String result = "0";
 
             try {
@@ -619,147 +683,36 @@ public class SearchActivity extends BaseActivity {
                     dlcParam = "&dlc=1";
                 }
 
-                Document doc;
-                if (extras != null && extras.getString("url") != null && !TextUtils.isEmpty(extras.getString("url"))) {
-                    doc = Jsoup.connect(url).timeout(30000).get();
-                } else {
-                    // EX - http://www.gamefaqs.com/search/index.html?platform=0&game=final+fantasy+xiii&mobile=1&dlc=1
-                    doc = Jsoup
-                            .connect(getResources().getString(R.string.GAMEFAQS_URL)
-                                    + "/search/index.html?game="
-                                    + gameParam
-                                    + mobileParam
-                                    + dlcParam)
-                            .timeout(30000).get();
-
-                    Log.i(TAG, "SEARCH QUERY - "
-                            + getResources().getString(R.string.GAMEFAQS_URL)
-                            + "/search/index.html?game="
-                            + gameParam
-                            + mobileParam
-                            + dlcParam);
+                content = getFaq(game);
+                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+                File file = new File(dir + "/faqr/", validFileName(game));
+                file.createNewFile();
+                FileOutputStream stream = new FileOutputStream(file);
+                try {
+                    stream.write(content.getBytes());
+                } finally {
+                    stream.close();
                 }
+                String sectionTitle = game.replace("gamefaqs.gamespot.com/", "").split("/")[1];
+                ArrayList sectionData = new ArrayList();
+                sectionData.add(
+                        content.split("\n")[0].split("by")[0] + // Guide Name
+                                " --- " +
+                                content.split("|")[1].split("Updated: ")[0] + // Updated
+                                " --- " +
+                                content.split("\n")[0].split("by")[1] + // Author
+                                " --- " +
+                                content.split("|")[0].split("Version: ") + // Version
+                                " --- " +
+                                "size" +
+                                " --- " +
+                                "href" +
+                                " --- " +
+                                "img");
+                titles.add(sectionTitle);
+                data.add(sectionData);
+                allData.addAll(sectionData);
 
-                String[] split = url.split("/");
-                String last = split[split.length - 1];
-
-                if (last.equals("faqs")) {
-                    // ///////////////////////////
-                    // SECOND SEARCH RESULTS PAGE
-                    int stop = 0;
-                    Element mainElem = doc.select("#content").get(0);
-                    for (Element innerElem : mainElem.children()) {
-                        String tagName = innerElem.tagName();
-                        if (innerElem.tagName().equals("div") && innerElem.className().equals("pod")) {
-                            stop++;
-                        }
-                        if (innerElem.tagName().equals("h2")) {
-                            break;
-                        }
-                    }
-
-                    int podNumber = 1;
-                    Elements podElems = doc.select(".pod");
-                    for (Element podElem : podElems) {
-                        String sectionTitle = podElem.select(".title").text().trim();
-                        ArrayList sectionData = new ArrayList();
-                        Elements rowElems = podElem.select("tr");
-                        for (Element rowElem : rowElems) {
-                            int count = 0;
-                            String img = "";
-                            String href = "";
-                            String title = "";
-                            String date = "";
-                            String author = "";
-                            String version = "";
-                            String size = "";
-                            Elements tdElems = rowElem.select("td");
-                            for (Element tdElem : tdElems) {
-                                if (sectionTitle.equals("Video Walkthroughs")) {
-                                    if (count == 0) {
-                                        href = tdElem.select("a").attr("href");
-                                        if (href.startsWith("/"))
-                                            href = getResources().getString(R.string.GAMEFAQS_URL) + href;
-                                    } else if (count == 1) {
-                                        title = tdElem.select(".faqtitle").text();
-                                        title += " by " + tdElem.select(".faqauthor").text();
-                                        author = tdElem.select(".faqinfo").text();
-                                        ;
-                                    }
-                                } else {
-                                    if (count == 0) {
-                                        title = tdElem.text();
-                                        Elements imgs = tdElem.select("img");
-                                        if (imgs.size() == 1 && imgs.get(0).attr("alt").equals("(HTML)")) {
-                                            title += "  <HTML>";
-                                        } else if (imgs.size() == 2 && imgs.get(1).attr("alt").equals("(HTML)")) {
-                                            title += "  <HTML>";
-                                        }
-                                        img = tdElem.select("img").attr("src");
-                                        href = tdElem.select("a").attr("href");
-                                        if (href.startsWith("/"))
-                                            href = getResources().getString(R.string.GAMEFAQS_URL) + href;
-                                    } else if (count == 1) {
-                                        date = tdElem.text();
-                                    } else if (count == 2) {
-                                        author = tdElem.select("a").text();
-                                    } else if (count == 3) {
-                                        version = tdElem.text();
-                                    } else if (count == 4) {
-                                        size = tdElem.text();
-                                    }
-                                }
-                                count++;
-                            }
-
-                            if (!TextUtils.isEmpty(href)) {
-                                sectionData.add(title + " --- " + date + " --- " + author + " --- " + version + " --- " + size + " --- " + href + " --- " + img);
-                            }
-
-                        }
-                        if (sectionData.size() > 0 && !sectionTitle.equalsIgnoreCase("Log In to GameFAQs")) {
-                            titles.add(sectionTitle);
-                            data.add(sectionData);
-                            allData.addAll(sectionData);
-                        }
-                        if (podNumber == stop) {
-                            break;
-                        }
-                        podNumber++;
-                    }
-
-                } else {
-                    // //////////////////////////
-                    // FIRST SEARCH RESULTS PAGE
-                    Elements podElems = doc.select(".search_result");
-                    for (Element podElem : podElems) {
-                        String sectionTitle = podElem.select(".sr_name").text();
-                        ArrayList sectionData = new ArrayList();
-                        Elements rowElems = podElem.select(".sr_product");
-                        for (Element rowElem : rowElems) {
-                            String platform = "";
-                            String title = "";
-                            String href = "";
-                            title = sectionTitle;
-                            platform = rowElem.select(".sr_product_name").select("a").text();
-                            Elements tdElems = rowElem.select(".sr_links");
-                            for (Element tdElem : tdElems) {
-                                if (tdElem.select("a").get(0).text().equals("FAQs")) {
-                                    href = getResources().getString(R.string.GAMEFAQS_URL) + tdElem.select("a").get(0).attr("href");
-                                }
-                            }
-                            if (!TextUtils.isEmpty(href)) {
-                                sectionData.add(FaqrApp.getConsoleFullName(platform) + " --- " + title + " --- " + href);
-                            }
-                        }
-                        if (sectionData.size() > 0) {
-                            titles.add(sectionTitle);
-                            data.add(sectionData);
-                            allData.addAll(sectionData);
-                        }
-                    }
-
-                }
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage(), e);
                 result = "-1";

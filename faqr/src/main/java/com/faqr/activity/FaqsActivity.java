@@ -41,8 +41,13 @@ import com.google.android.gms.analytics.Tracker;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -532,6 +537,67 @@ public class FaqsActivity extends BaseActivity {
             return position;
         }
 
+        public String convertStreamToString(InputStream is) throws Exception {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            reader.close();
+            return sb.toString();
+        }
+
+        public String getStringFromFile (FileInputStream fin) throws Exception {
+            String ret = convertStreamToString(fin);
+            //Make sure you close all streams.
+            fin.close();
+            return ret;
+        }
+
+        public FaqMeta getFaqMeta(File file)
+        {
+            String guide = null;
+            try {
+                FileInputStream is = new FileInputStream(file);
+                guide = getStringFromFile(is);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (guide != null)
+            {
+                String[] metaBlock = new String[10];
+                int i = 0;
+                while (i != 10)
+                {
+                    metaBlock[i] = guide.split("\n")[i];
+                    i++;
+                }
+                String meta = "";
+                for (String s : metaBlock)
+                {
+                    meta = meta + s;
+                }
+
+                FaqMeta fq = new FaqMeta(meta.split("\n")[0].split("by")[0] + // Guide Name
+                        " --- " +
+                        meta.split("|")[1].split("Updated: ")[0] + // Updated
+                        " --- " +
+                        meta.split("\n")[0].split("by")[1] + // Author
+                        " --- " +
+                        meta.split("|")[0].split("Version: ")[0] + // Version
+                        " --- " +
+                        "size" +
+                        " --- " +
+                        "faqchecker.ddns.net/faq/direct?url=gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741" +
+                        " --- " +
+                        "img");
+                Log.e("testing", fq.getDate());
+                return fq;
+            }
+            return null;
+        }
+
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = inflater.inflate(R.layout.list_item_faqs, parent, false);
 
@@ -551,7 +617,7 @@ public class FaqsActivity extends BaseActivity {
 
             File file = (File) allData.get(position);
 
-            FaqMeta faqMeta = new FaqMeta(prefs.getString(file.getName(), ""));
+            FaqMeta faqMeta = getFaqMeta(file);
 
 
             // name
@@ -606,6 +672,7 @@ public class FaqsActivity extends BaseActivity {
                 }
                 sectionCount += 1;
             }
+            if (sectionCount < titles.toArray().length)
             textView.setText(titles.get(sectionCount).toString());
 
             // theme goodness
@@ -663,64 +730,116 @@ public class FaqsActivity extends BaseActivity {
         @Override
         protected String doInBackground(String... strings) {
             String result = "";
-            // PRIVATE
-            File[] files = FaqrApp.getFaqrFiles(getFilesDir().listFiles());
             // PUBLIC
-//            if (isStoragePermissionGranted()) {
-//                File[] ofiles = FaqrApp.getFaqrFiles(getFilesDir().listFiles());
-//                if (ofiles.length > 0) {
-//                    // !!! ONE TIME JOB !!!
-//                    // one time move all files from old PRIVATE path to new PUBLIC path
-//                    File source = getFilesDir();
-//                    File dest = FaqrApp.getFaqrFilesDir();
-//                    try {
-//                        FileUtils.copyDirectory(source, dest);
-//                        FileUtils.deleteDirectory(source);
-//                    } catch (IOException e) {
-//                        Log.e(TAG, e.getMessage(), e);
-//                    }
-//                }
-//
-//                File directory = FaqrApp.getFaqrFilesDir();
-//                File[] dirFiles = directory.listFiles();
-//                File[] files = FaqrApp.getFaqrFiles(FaqrApp.getFaqrFilesDir().listFiles());
-//            }
-
-            allData = Arrays.asList(files);
-
-            // current sorting
-            Collections.sort(allData, new MyAlphaComparable());
-
-            titles = new ArrayList();
-            data = new ArrayList();
-
-            // titles loop
-            for (int i = 0; i < allData.size(); i++) {
-                File file = (File) allData.get(i);
-                FaqMeta faqMeta = new FaqMeta(prefs.getString(file.getName(), ""));
-                String title = faqMeta.getGameTitle();
-                if (!titles.contains(title)) {
-                    titles.add(title);
-                }
-            }
-
-            // data loop
-            for (int i = 0; i < titles.size(); i++) {
-                ArrayList<File> sectionFiles = new ArrayList<File>();
-                for (int j = 0; j < allData.size(); j++) {
-                    File file = (File) allData.get(j);
-
-                    FaqMeta faqMeta = new FaqMeta(prefs.getString(file.getName(), ""));
-                    String title = faqMeta.getGameTitle();
-                    if (title.equals(titles.get(i))) {
-                        sectionFiles.add(allData.get(j));
+            if (isStoragePermissionGranted()) {
+                File[] ofiles = FaqrApp.getFaqrFiles(getFilesDir().listFiles());
+                if (ofiles.length > 0) {
+                    // !!! ONE TIME JOB !!!
+                    // one time move all files from old PRIVATE path to new PUBLIC path
+                    File source = getFilesDir();
+                    File dest = FaqrApp.getFaqrFilesDir();
+                    try {
+                        FileUtils.copyDirectory(source, dest);
+                        FileUtils.deleteDirectory(source);
+                    } catch (IOException e) {
+                        Log.e(TAG, e.getMessage(), e);
                     }
                 }
-                data.add(sectionFiles);
+
+                File directory = FaqrApp.getFaqrFilesDir();
+                File[] dirFiles = directory.listFiles();
+                File[] files = FaqrApp.getFaqrFiles(FaqrApp.getFaqrFilesDir().listFiles());
+
+                allData = Arrays.asList(files);
+
+                // current sorting
+                Collections.sort(allData, new MyAlphaComparable());
+
+                titles = new ArrayList();
+                data = new ArrayList();
+
+                for (int i = 0; i < allData.size(); i++) {
+                    File file = (File) allData.get(i);
+                    String title = file.getName().replace("gamefaqs_gamespot_com_", "").split("_faqs_")[0];
+                    if (!titles.contains(title)) {
+                        titles.add(title);
+                    }
+                }
+
+                // data loop
+                for (int i = 0; i < titles.size(); i++) {
+                    ArrayList<File> sectionFiles = new ArrayList<File>();
+                    for (int j = 0; j < allData.size(); j++) {
+                        File file = (File) allData.get(j);
+                        if (file.getName().replace("gamefaqs_gamespot_com_", "").split("_faqs_")[0].equals(titles.get(i))) {
+                            sectionFiles.add(allData.get(j));
+                        }
+                    }
+                    data.add(sectionFiles);
+                }
             }
 
-
             return result;
+        }
+
+        public String convertStreamToString(InputStream is) throws Exception {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            reader.close();
+            return sb.toString();
+        }
+
+        public String getStringFromFile (FileInputStream fin) throws Exception {
+            String ret = convertStreamToString(fin);
+            //Make sure you close all streams.
+            fin.close();
+            return ret;
+        }
+
+        public FaqMeta getFaqMeta(File file)
+        {
+            String guide = null;
+            try {
+                FileInputStream is = new FileInputStream(file);
+                guide = getStringFromFile(is);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (guide != null)
+            {
+                String[] metaBlock = new String[9];
+                int i = 0;
+                while (i != 10)
+                {
+                    metaBlock[i] = guide.split("\n")[i];
+                    i++;
+                }
+                String meta = "";
+                for (String s : metaBlock)
+                {
+                    meta = meta + s;
+                }
+                FaqMeta fq = new FaqMeta(meta.split("\n")[0].split("by")[0] + // Guide Name
+                        " --- " +
+                        meta.split("|")[1].split("Updated: ")[0] + // Updated
+                        " --- " +
+                        meta.split("\n")[0].split("by")[1] + // Author
+                        " --- " +
+                        meta.split("|")[0].split("Version: ")[0] + // Version
+                        " --- " +
+                        "size" +
+                        " --- " +
+                        "href" +
+                        " --- " +
+                        "img");
+                Log.e("testing", fq.getDate());
+                return fq;
+            }
+            return null;
         }
 
         protected void onPostExecute(String result) {

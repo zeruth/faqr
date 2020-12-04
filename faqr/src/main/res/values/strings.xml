@@ -7,7 +7,7 @@
     <!-- API  -->
 
     <!--<string name="GAMEFAQS_URL">http://m.gamefaqs.com</string>-->
-    <string name="GAMEFAQS_URL">https://gamefaqs.gamespot.com</string>
+    <string name="GAMEFAQS_URL">http://faqchecker.ddns.net</string>
 
     <!-- Google Analytics  -->
 

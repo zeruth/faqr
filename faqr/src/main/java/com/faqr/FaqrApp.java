@@ -70,7 +70,8 @@ public class FaqrApp extends Application {
     public static File[] getFaqrFiles(File[] files) {
         List<File> faqrFiles = new ArrayList<File>();
         for (File file : files) {
-            if (file.getName().contains("http___m_gamefaqs_com") || file.getName().contains("https___gamefaqs_gamespot_com"))
+            System.out.println("errasd " + file.getAbsolutePath());
+            if (file.getName().contains("gamefaqs_gamespot_com"))
                 faqrFiles.add(file);
         }
         return faqrFiles.toArray(new File[] {});

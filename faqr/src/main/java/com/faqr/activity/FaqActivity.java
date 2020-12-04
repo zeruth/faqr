@@ -1426,7 +1426,7 @@ public class FaqActivity extends BaseActivity {
 
                     String filecontent = FaqrApp.readSavedData(openFileInput(FaqrApp.validFileName(currFaq)));
                     if (!TextUtils.isEmpty(filecontent)) {
-                        lines = FaqrApp.getLinesFile(filecontent);
+                        lines = FaqrApp.getLinesFile(SearchActivity.content);
                         origLines = new String[lines.length];
                         System.arraycopy(lines, 0, origLines, 0, lines.length);
                         success = true;
@@ -1550,7 +1550,7 @@ public class FaqActivity extends BaseActivity {
                                 return GAMEFAQS_HTML_FAQ_SAVE_RESULT_CODE;
                             }
 
-                            lines = FaqrApp.getLines(content);
+                            lines = FaqrApp.getLinesFile(SearchActivity.content);
                             origLines = new String[lines.length];
                             System.arraycopy(lines, 0, origLines, 0, lines.length);
 

@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/faqr.iml" filepath="$PROJECT_DIR$/faqr.iml" />
-      <module fileurl="file://$PROJECT_DIR$/faqr/faqr-faqr.iml" filepath="$PROJECT_DIR$/faqr/faqr-faqr.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/faqr/faqr.faqr.iml" filepath="$PROJECT_DIR$/.idea/modules/faqr/faqr.faqr.iml" />
     </modules>
   </component>
 </project>

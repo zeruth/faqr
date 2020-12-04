@@ -145,6 +145,8 @@ public class FaqMeta {
         String url = "";
 
         try {
+            for (String s : faqMetaSplit)
+                System.out.print(s + ":asdasdasd");
             url = faqMetaSplit[5].trim();
         } catch (Exception e) {
             Log.e("FAQr", e.getMessage(), e);
@@ -164,7 +166,7 @@ public class FaqMeta {
         String gameTitle = "";
 
         try {
-            gameTitle = faqMetaSplit[6].trim();
+            gameTitle = "";
 
             if (gameTitle.indexOf(getTitle()) >= 0) {
                 gameTitle = gameTitle.split(getTitle())[0].trim();
