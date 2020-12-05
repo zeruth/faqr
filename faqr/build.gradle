@@ -9,7 +9,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 27
         versionCode 93
-        versionName "2.4.0"
+        versionName "0.5.0"
     }
 
     buildTypes {
@@ -31,7 +31,7 @@ dependencies {
     compile 'com.android.support:customtabs:27.1.1'
     compile 'com.google.android.gms:play-services-analytics:7.8.0'
     compile 'se.emilsjolander:stickylistheaders:2.7.0'
-    compile "commons-io:commons-io:+"
-    compile 'org.jsoup:jsoup:1.10.3'
+    compile "commons-io:commons-io:20030203.000550"
+    compile 'org.jsoup:jsoup:1.13.1'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }

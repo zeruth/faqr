@@ -1,5 +1,19 @@
-FAQr
-====
+FAQredux
+====  
+
+This is a work in progress revival of FAQr using a service I wrote that caches plain text game guides on demand  
+To load a game guide, enter a direct link to the guide into the search bar like the following example:  
+```
+gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741
+```
+WARNING: Currently I recommend using FAQmarks on only 1 guide, as every guide will share FAQmark locations unfortunately.  
+(I only worked on this to get it back for the one guide so don't expect frequent updates)  
+  
+If you find any issues with a certain guide link etc, create an issue on my fork please with the problem url.
+
+This app is signed with different keys than the original FAQr, and most likely will not be able to isntall over it.  
+If you have this problem, uninstall FAQr first,  
+
 ```
 
              ______ __ __ __   _   __                         ?
