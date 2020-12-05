@@ -11,7 +11,7 @@ WARNING: Currently I recommend using FAQmarks on only 1 guide, as every guide wi
   
 If you find any issues with a certain guide link etc, create an issue on my fork please with the problem url.
 
-This app is signed with different keys than the original FAQr, and most likely will not be able to isntall over it.  
+This app is signed with different keys than the original FAQr, and most likely will not be able to install over it.  
 If you have this problem, uninstall FAQr first,  
 
 ```
