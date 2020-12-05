@@ -1,7 +1,9 @@
 FAQredux
 ====  
 
-This is a work in progress revival of FAQr using a service I wrote that caches plain text game guides on demand  
+This is a work in progress revival of FAQr using a service I wrote that caches plain text game guides on demand.  
+Builds (APK): https://github.com/zeruth/faqr/tags  
+
 To load a game guide, enter a direct link to the guide into the search bar like the following example:  
 ```
 gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741
